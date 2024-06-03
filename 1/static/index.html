@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit a Post</title>
+</head>
+<body>
+    <h1>Submit a Post</h1>
+    <form action="/submit" method="post" enctype="multipart/form-data">
+        <label for="title">Title (max 15 chars):</label>
+        <input type="text" id="title" name="title" maxlength="15" required>
+        <br>
+        <label for="message">Message (max 200000 chars):</label>
+        <textarea id="message" name="message" maxlength="200000" required></textarea>
+        <br>
+        <label for="file">File:</label>
+        <input type="file" id="file" name="file" accept=".jpg,.gif,.png,.webm,.webp,.mpe,.mp4">
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+    <h2>Posts</h2>
+    <div id="posts"></div>
+    <script>
+        async function loadPosts() {
+            const response = await fetch('/posts');
+            const data = await response.json();
+            const postsDiv = document.getElementById('posts');
+            postsDiv.innerHTML = '';
+
+            data.posts.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.className = 'post';
+                postDiv.innerHTML = `
+                    <h3>${post.title}</h3>
+                    <p>${post.message}</p>
+                    ${post.file_path ? getMediaHtml(post.file_path) : ''}
+                `;
+                postsDiv.appendChild(postDiv);
+            });
+        }
+
+        function getMediaHtml(filePath) {
+            const extension = filePath.split('.').pop();
+            if (['mp4', 'webm'].includes(extension)) {
+                return `<video controls src="${filePath}"></video>`;
+            } else if (['jpg', 'gif', 'png', 'webp'].includes(extension)) {
+                return `<img src="${filePath}" alt="Uploaded image">`;
+            } else {
+                return '';
+            }
+        }
+
+        loadPosts();
+    </script>
+</body>
+</html>
